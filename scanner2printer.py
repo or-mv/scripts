@@ -1,11 +1,16 @@
 import time
+from PyRingIt import RingIT
+# from PyRingIt import create_qr_image
+# from PyRingIt import print_qr
+from utils.record import Record
 import serial
 import json
 from utils.config_manager import DEFAULT_CONFIG_FILE_LOCATION
 
 with open(DEFAULT_CONFIG_FILE_LOCATION, "r") as config_file:
     config_data = json.load(config_file)
-port, baudrate = config_data["devices"]["qr_scanner"]["port"], config_data["devices"]["qr_scanner"]["baudrate"]
+port, baudrate, prefix  = config_data["devices"]["qr_scanner"]["port"], config_data["devices"]["qr_scanner"]["baudrate"], config_data["devices"]["qr_scanner"]["prefix"]
+
 
 class BarcodeScanner:
     def __init__(self):
@@ -48,11 +53,13 @@ class BarcodeScanner:
             self.ser.close()
             return -2
         if len(qr_output) > 1:
-            str_qr_output = qr_output.decode('utf-8')
-            att_id_prefix = 'attId='
-            if att_id_prefix in str_qr_output:
-                att_id_start = str_qr_output.index(att_id_prefix) + len(att_id_prefix)
-                return str_qr_output[att_id_start:].strip()
+            full_str_qr_output = qr_output.decode('utf-8')
+            str_qr_output = full_str_qr_output.replace(prefix, "")
+            return str_qr_output
+            # att_id_prefix = 'attId='
+            # if att_id_prefix in str_qr_output:
+            #     att_id_start = str_qr_output.index(att_id_prefix) + len(att_id_prefix)
+            #     return str_qr_output[att_id_start:].strip()
         return 0
 
     def handle_scan_result(self, result):
@@ -60,5 +67,22 @@ class BarcodeScanner:
         if self.first_scan_result is None:
             self.first_scan_result = result
 
+
+# Initialize the barcode scanner
 scanner = BarcodeScanner()
+
+# Start the barcode scanning process
 scanner.start_scanning()
+
+# Initialize RingIT
+rit = RingIT("video")
+rit = Record(rit.ring_it_params, rit.mv_session, 25, scan=scanner.first_scan_result, ssd_session=rit.ssd_session)
+
+# Create QR image
+rit.create_qr_image(rit, "hq")
+
+#  r = Record(video_rit.ring_it_params, video_rit.mv_session, 25)
+#     video_rit.create_qr_image(r, 'hq')
+
+# Print QR image
+rit.print_qr(rit.hq_qrimage)

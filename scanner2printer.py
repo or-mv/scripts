@@ -66,7 +66,7 @@ class BarcodeScanner:
 def main_menu():
     rit = RingIT("video")
     scanner = BarcodeScanner()
-    quality = 'hq'  # Default quality, change as needed
+    # quality = 'hq'  # change as needed
 
     while True:
         print("\033[4mGenerate and print QR code:\033[0m")
@@ -90,10 +90,10 @@ def main_menu():
             print("Invalid choice. Please choose a valid option (1/2/3)")
             continue
 
-        # Generate the QR image without specifying quality (empty string)
-        rit.create_qr_image(r, 'hq')
+        # Generate the QR image without specifying quality 
+        barcode = rit.create_clean_qr_image(r)
         print("Creating QR image...")
-        # _______________DISABLE PRINTING ____________________rit.print_qr(r.hq_qrimage)
+        rit.print_qr(barcode)
         print("\n The path to access your barcode is:", os.path.normpath(r.hq_qrimage) + "\n")
 
 

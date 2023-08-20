@@ -4,6 +4,7 @@ from utils.record import Record
 import serial
 import json
 from utils.config_manager import DEFAULT_CONFIG_FILE_LOCATION
+import os
 
 with open(DEFAULT_CONFIG_FILE_LOCATION, "r") as config_file:
     config_data = json.load(config_file)
@@ -63,34 +64,37 @@ class BarcodeScanner:
 
 
 def main_menu():
+    rit = RingIT("video")
+    scanner = BarcodeScanner()
+    quality = 'hq'  # Default quality, change as needed
+
     while True:
-        print("Menu:")
-        print("1. Scan and print barcode")
-        print("2. Manually input a UUID, generate a barcode, and then print it")
+        print("\033[4mGenerate and print QR code:\033[0m")
+        print("1. Scan")
+        print("2. Manually input a UUID")
         print("3. Exit")
 
         choice = input("Enter your choice (1/2/3): ")
-
         if choice == '1':
-            scanner = BarcodeScanner()
+            # Option 1: Scan and print barcode
             scanner.start_scanning()
-            rit = RingIT("video")
             r = Record(rit.ring_it_params, rit.mv_session, 25, scan=scanner.first_scan_result)
-            rit.create_qr_image(r, 'hq')
-            print("Creating QR image...")
-            rit.print_qr(r.hq_qrimage)
         elif choice == '2':
+            # Option 2: Manually input a UUID, generate a barcode, and then print it
             uuid_input = input("Enter a UUID: ")
-            rit = RingIT("video")
             r = Record(rit.ring_it_params, rit.mv_session, 25, scan=uuid_input)
-            rit.create_qr_image(r, 'hq')
-            print("Creating QR image...")
-            rit.print_qr(r.hq_qrimage)
         elif choice == '3':
-            print("Exiting...")
+            print("\n Exiting... \n")
             break
         else:
             print("Invalid choice. Please choose a valid option (1/2/3)")
+            continue
+
+        # Generate the QR image without specifying quality (empty string)
+        rit.create_qr_image(r, 'hq')
+        print("Creating QR image...")
+        # _______________DISABLE PRINTING ____________________rit.print_qr(r.hq_qrimage)
+        print("\n The path to access your barcode is:", os.path.normpath(r.hq_qrimage) + "\n")
 
 
 if __name__ == "__main__":

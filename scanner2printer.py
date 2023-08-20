@@ -1,7 +1,5 @@
 import time
 from PyRingIt import RingIT
-# from PyRingIt import create_qr_image
-# from PyRingIt import print_qr
 from utils.record import Record
 import serial
 import json
@@ -56,10 +54,6 @@ class BarcodeScanner:
             full_str_qr_output = qr_output.decode('utf-8')
             str_qr_output = full_str_qr_output.replace(prefix, "")
             return str_qr_output
-            # att_id_prefix = 'attId='
-            # if att_id_prefix in str_qr_output:
-            #     att_id_start = str_qr_output.index(att_id_prefix) + len(att_id_prefix)
-            #     return str_qr_output[att_id_start:].strip()
         return 0
 
     def handle_scan_result(self, result):
@@ -68,21 +62,36 @@ class BarcodeScanner:
             self.first_scan_result = result
 
 
-# Initialize the barcode scanner
-scanner = BarcodeScanner()
+def main_menu():
+    while True:
+        print("Menu:")
+        print("1. Scan and print barcode")
+        print("2. Manually input a UUID, generate a barcode, and then print it")
+        print("3. Exit")
 
-# Start the barcode scanning process
-scanner.start_scanning()
+        choice = input("Enter your choice (1/2/3): ")
 
-# Initialize RingIT
-rit = RingIT("video")
-rit = Record(rit.ring_it_params, rit.mv_session, 25, scan=scanner.first_scan_result, ssd_session=rit.ssd_session)
+        if choice == '1':
+            scanner = BarcodeScanner()
+            scanner.start_scanning()
+            rit = RingIT("video")
+            r = Record(rit.ring_it_params, rit.mv_session, 25, scan=scanner.first_scan_result)
+            rit.create_qr_image(r, 'hq')
+            print("Creating QR image...")
+            rit.print_qr(r.hq_qrimage)
+        elif choice == '2':
+            uuid_input = input("Enter a UUID: ")
+            rit = RingIT("video")
+            r = Record(rit.ring_it_params, rit.mv_session, 25, scan=uuid_input)
+            rit.create_qr_image(r, 'hq')
+            print("Creating QR image...")
+            rit.print_qr(r.hq_qrimage)
+        elif choice == '3':
+            print("Exiting...")
+            break
+        else:
+            print("Invalid choice. Please choose a valid option (1/2/3)")
 
-# Create QR image
-rit.create_qr_image(rit, "hq")
 
-#  r = Record(video_rit.ring_it_params, video_rit.mv_session, 25)
-#     video_rit.create_qr_image(r, 'hq')
-
-# Print QR image
-rit.print_qr(rit.hq_qrimage)
+if __name__ == "__main__":
+    main_menu()

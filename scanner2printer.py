@@ -1,10 +1,13 @@
-import time
-from PyRingIt import RingIT
-from utils.record import Record
-import serial
-import json
-from utils.config_manager import DEFAULT_CONFIG_FILE_LOCATION
+import sys
 import os
+import time
+import json
+import serial
+
+sys.path.append(r".")
+from PyRingIt import RingIT # noqa
+from utils.record import Record # noqa
+from utils.config_manager import DEFAULT_CONFIG_FILE_LOCATION  # noqa
 
 with open(DEFAULT_CONFIG_FILE_LOCATION, "r") as config_file:
     config_data = json.load(config_file)
@@ -66,23 +69,22 @@ class BarcodeScanner:
 def main_menu():
     rit = RingIT("video")
     scanner = BarcodeScanner()
-    # quality = 'hq'  # change as needed
 
     while True:
         print("\033[4mGenerate and print QR code:\033[0m")
         print("1. Scan")
         print("2. Manually input a UUID")
         print("3. Exit")
-
+        current_uuid = ""
         choice = input("Enter your choice (1/2/3): ")
+
         if choice == '1':
             # Option 1: Scan and print barcode
             scanner.start_scanning()
-            r = Record(rit.ring_it_params, rit.mv_session, 25, scan=scanner.first_scan_result)
+            current_uuid = scanner.first_scan_result
         elif choice == '2':
             # Option 2: Manually input a UUID, generate a barcode, and then print it
-            uuid_input = input("Enter a UUID: ")
-            r = Record(rit.ring_it_params, rit.mv_session, 25, scan=uuid_input)
+            current_uuid = input("Enter a UUID: ")
         elif choice == '3':
             print("\n Exiting... \n")
             break
@@ -90,11 +92,20 @@ def main_menu():
             print("Invalid choice. Please choose a valid option (1/2/3)")
             continue
 
-        # Generate the QR image without specifying quality 
-        barcode = rit.create_clean_qr_image(r)
-        print("Creating QR image...")
-        rit.print_qr(barcode)
-        print("\n The path to access your barcode is:", os.path.normpath(r.hq_qrimage) + "\n")
+        # Generate the QR image without specifying quality
+        try:
+            print("Creating QR image...")
+            record = Record(rit.ring_it_params, rit.mv_session, 25, scan=current_uuid)
+            rit.create_qr_image(record)
+            print("\n The path to access your barcode is:", os.path.normpath(record.qrimage) + "\n")
+
+            ret = rit.print_qr(record.qrimage)
+            if ret != 0:
+                raise ValueError("Couldn't print, check file path")
+        except Exception as e:
+            print(e)
+
+        print("QR image printed successfuly!")
 
 
 if __name__ == "__main__":

@@ -105,7 +105,7 @@ def main_menu():
         except Exception as e:
             print(e)
 
-        print("QR image printed successfuly!")
+        print("QR image printed successfully!")
 
 
 if __name__ == "__main__":

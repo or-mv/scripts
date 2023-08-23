@@ -110,22 +110,32 @@ def main_menu():
             qr.add_data(current_uuid)
             qr.make(fit=True)
 
+            # Initialize the drawing context
             img = qr.make_image(fill_color="black", back_color="white")
-
-            # Add text above the QR code
             draw = ImageDraw.Draw(img)
-            font = ImageFont.load_default()  # You can change the font and size if needed
-            above_text = "SCAN TO DISPLAY HOLOGRAM"
+
+            # Define fonts with larger sizes
+            above_text_font_size = 18  # Change this to the desired font size
+            below_text_font_size = 10  # Change this to the desired font size
+
+            font = ImageFont.truetype("arial.ttf", above_text_font_size)  # You can change the font file and size if needed
+            small_font = ImageFont.truetype("arial.ttf", below_text_font_size)  # You can change the font file and size if needed
+
+            # Replace this section above the QR code
+            above_text = "SCAN TO DISPLAY HOLOGRAM"  # Change this text
             above_text_size = draw.textsize(above_text, font=font)
             above_text_position = ((img.width - above_text_size[0]) // 2, 10)
             draw.text(above_text_position, above_text, font=font, fill="black")
+            above_text_x = (img.width - above_text_size[0]) // 2  # Center the text horizontally
+            above_text_y = 10
+            draw.text((above_text_x, above_text_y), above_text, font=font, fill="black")
 
-            # Add text below the QR code
-            small_font = ImageFont.load_default()  # You can change the font and size if needed
-            below_text = "Having issues? Visit Summitov.com/portal."
+            # Replace this section below the QR code
+            below_text = "Having issues? Visit Summitov.com/portal."  # Change this text
             below_text_size = draw.textsize(below_text, font=small_font)
-            below_text_position = ((img.width - below_text_size[0]) // 2, img.height - below_text_size[1] - 10)
-            draw.text(below_text_position, below_text, font=small_font, fill="black")
+            below_text_x = (img.width - below_text_size[0]) // 2  # Center the text horizontally
+            below_text_y = img.height - below_text_size[1] - 10
+            draw.text((below_text_x, below_text_y), below_text, font=small_font, fill="black")
 
             # Save the QR code image
             qr_image_path = "qr_code.png"

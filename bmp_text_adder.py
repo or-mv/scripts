@@ -1,50 +1,56 @@
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image
+from PIL import ImageDraw
+from PIL import ImageFont
 
-def add_text_to_barcode(input_path, output_path):
-    # Load the barcode image
-    barcode_image = Image.open(input_path)
+def add_text_to_image(input_image_path, output_image_path, above_text, below_text, below_text_size=12):
+    # Open an Image
+    img = Image.open(input_image_path)
 
-    # Get image dimensions
-    width, height = barcode_image.size
+    # Calculate the new width and height to accommodate the additional text
+    original_width, original_height = img.size
+    new_width = original_width + 80  # Increase width by 80 pixels
+    new_height = original_height + 80  # Increase height by 80 pixels
 
-    # Increase the image height to accommodate the text and space
-    new_height = height + 120  # You can adjust this value as needed
-    new_image = Image.new('RGB', (width, new_height), color='white')
-    new_image.paste(barcode_image, (0, 0))
+    # Create a new image with the calculated width and height
+    new_img = Image.new("RGB", (new_width, new_height), color=(255, 255, 255))
 
-    # Create a drawing context
-    draw = ImageDraw.Draw(new_image)
+    # Paste the original image in the center of the new image
+    new_img.paste(img, ((new_width - original_width) // 2, (new_height - original_height) // 2))
 
-    # Define font and text for above and below the barcode
-    above_text = "SCAN TO DISPLAY HOLOGRAM"
-    below_text = "Having issues? Visit Summitov.com/portal."
+    # Call draw Method to add 2D graphics in the new image
+    draw = ImageDraw.Draw(new_img)
 
-    # Use the default system font (often Arial)
-    font_above = ImageFont.load_default()
-    font_below = ImageFont.load_default()
+    # Custom font styles and sizes
+    font_above = ImageFont.truetype("arial.ttf", 16, encoding="unic")
+    font_below = ImageFont.truetype("arial.ttf", below_text_size, encoding="unic")
 
-    # Calculate text size and position
-    above_text_size = draw.textsize(above_text, font=font_above)
-    below_text_size = draw.textsize(below_text, font=font_below)
-    above_text_position = ((width - above_text_size[0]) / 2, 10)  # Adjust Y coordinate for space above
-    below_text_position = ((width - below_text_size[0]) / 2, height + 40)  # Adjust Y coordinate for space below
+    # Add above text to the image
+    text_width, text_height = draw.textsize(above_text, font=font_above)
+    draw.text(((new_width - text_width) // 2, 7), above_text, font=font_above, fill='black')
 
-    # Add text above and below the barcode
-    draw.text(above_text_position, above_text, font=font_above, fill="black")
-    draw.text(below_text_position, below_text, font=font_below, fill="black")
+    # Add below text to the image
+    text_width, text_height = draw.textsize(below_text, font=font_below)
+    draw.text(((new_width - text_width) // 2, new_height - text_height - 10), below_text, font=font_below, fill='black')
 
-    # Save the new image with text
-    new_image.save(output_path)
+    # Save the edited image
+    new_img.save(output_image_path)
 
-    # Check for success and print a message
-    if os.path.exists(output_path):
-        print("Text added successfully. Output image saved as:", output_path)
-    else:
-        print("Text addition failed.")
+    # Display edited image
+    new_img.show()
 
-if __name__ == "__main__":
-    import os
+    # Return the path of the saved image
+    return output_image_path
 
-    input_file = "C:/Users/user/Desktop/bmp/dfg.bmp"  # Replace with your input barcode image path
-    output_file = "C:/Users/user/Desktop/bmp/dfg_text.bmp"  # Replace with your desired output image path
-    add_text_to_barcode(input_file, output_file)
+# Define input and output paths
+input_image_path = r"C:\Users\user\Desktop\bmp\dfg.bmp"
+output_image_path = r"C:\Users\user\Desktop\bmp\dfg_text.png"
+
+# Texts to add above and below the image
+above_text = "SCAN TO DISPLAY HOLOGRAM"
+below_text = "Having issues? Visit Summitov.com/portal."
+
+# Add text above and below the image with smaller below text and get the path of the saved image
+saved_image_path = add_text_to_image(input_image_path, output_image_path, above_text, below_text, below_text_size=10)
+
+# Print the path of the saved image for the user
+print("Image saved at:", saved_image_path)

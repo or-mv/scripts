@@ -1,3 +1,4 @@
+import re
 from PIL import Image
 from PIL import ImageDraw
 from PIL import ImageFont
@@ -36,7 +37,7 @@ def add_text_to_image(input_image_path, output_image_path, above_text, below_tex
     # Add below text to the image
     draw.text(((new_width - below_text_width) // 2, new_height - below_text_height - 10), below_text, font=font_below, fill='black')
 
-    # Save the edited image
+    # Save the edited image with a valid output path
     new_img.save(output_image_path)
 
     # Display edited image
@@ -45,16 +46,30 @@ def add_text_to_image(input_image_path, output_image_path, above_text, below_tex
     # Return the path of the saved image
     return output_image_path
 
-# Define input and output paths
-input_image_path = r"C:\Users\user\Desktop\bmp\dfg.bmp"
-output_image_path = r"C:\Users\user\Desktop\bmp\dfg_text.png"
+def main():
+    # Get input image path from user
+    input_path = input("Enter the input image path: ")
 
-# Texts to add above and below the image
-above_text = "SCAN TO DISPLAY HOLOGRAM"
-below_text = "Having issues? Visit Summitov.com/portal."
+    # Extract the file path from the input if it is enclosed in double quotes
+    match = re.match(r'^"(.*)"$', input_path)
+    if match:
+        input_image_path = match.group(1)
+    else:
+        input_image_path = input_path
 
-# Add text above and below the image and get the path of the saved image
-saved_image_path = add_text_to_image(input_image_path, output_image_path, above_text, below_text)
+    # Set the output image path based on the input path
+    output_image_path = input_image_path[:-4] + "_text.png"  # Remove the extension and add "_output.png"
 
-# Print the path of the saved image for the user
-print("Image saved at:", saved_image_path)
+    # Texts to add above and below the image
+    above_text = "SCAN TO DISPLAY HOLOGRAM"
+    below_text = "Having issues? Visit Summitov.com/portal."
+
+    # Add text above and below the image and get the path of the saved image
+    saved_image_path = add_text_to_image(input_image_path, output_image_path, above_text, below_text)
+
+    # Print the path of the saved image for the user
+    print("Image saved at:", saved_image_path)
+
+
+if __name__ == "__main__":
+    main()

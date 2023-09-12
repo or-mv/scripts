@@ -98,8 +98,8 @@ def main_menu():
             record = Record(rit.ring_it_params, rit.mv_session, 25, scan=current_uuid)
             rit.create_qr_image(record)
             print("\n The path to access your barcode is:", os.path.normpath(record.qrimage) + "\n")
-
-            ret = rit.print_qr(record.qrimage)
+            # record.qrimage = os.path.normpath(r'C:\Users\PortyOne\Desktop\qr_with_text\dfg_text.png')
+            ret = rit.print_qr(r"C:\Users\PortyOne\Desktop\qr_with_text\dfg_text.png")
             if ret != 0:
                 raise ValueError("Couldn't print, check file path")
         except Exception as e:
@@ -110,3 +110,5 @@ def main_menu():
 
 if __name__ == "__main__":
     main_menu()
+
+    # If you have issues with printing - chack qr_printer cofiguration in ring_gui_config (labal size, name of printer, etc)

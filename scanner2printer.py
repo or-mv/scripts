@@ -3,21 +3,15 @@ import os
 import time
 import json
 import serial
-import qrcode
-from PIL import Image, ImageDraw, ImageFont
 
 sys.path.append(r".")
-from PyRingIt import RingIT  # noqa
-from utils.record import Record  # noqa
+from PyRingIt import RingIT # noqa
+from utils.record import Record # noqa
 from utils.config_manager import DEFAULT_CONFIG_FILE_LOCATION  # noqa
 
 with open(DEFAULT_CONFIG_FILE_LOCATION, "r") as config_file:
     config_data = json.load(config_file)
-port, baudrate, prefix = (
-    config_data["devices"]["qr_scanner"]["port"],
-    config_data["devices"]["qr_scanner"]["baudrate"],
-    config_data["devices"]["qr_scanner"]["prefix"],
-)
+port, baudrate, prefix  = config_data["devices"]["qr_scanner"]["port"], config_data["devices"]["qr_scanner"]["baudrate"], config_data["devices"]["qr_scanner"]["prefix"]
 
 
 class BarcodeScanner:
@@ -84,14 +78,14 @@ def main_menu():
         current_uuid = ""
         choice = input("Enter your choice (1/2/3): ")
 
-        if choice == "1":
+        if choice == '1':
             # Option 1: Scan and print barcode
             scanner.start_scanning()
             current_uuid = scanner.first_scan_result
-        elif choice == "2":
+        elif choice == '2':
             # Option 2: Manually input a UUID, generate a barcode, and then print it
             current_uuid = input("Enter a UUID: ")
-        elif choice == "3":
+        elif choice == '3':
             print("\n Exiting... \n")
             break
         else:
@@ -101,55 +95,13 @@ def main_menu():
         # Generate the QR image without specifying quality
         try:
             print("Creating QR image...")
-            qr = qrcode.QRCode(
-                version=1,
-                error_correction=qrcode.constants.ERROR_CORRECT_L,
-                box_size=10,
-                border=4,
-            )
-            qr.add_data(current_uuid)
-            qr.make(fit=True)
-
-            # Initialize the drawing context
-            img = qr.make_image(fill_color="black", back_color="white")
-            draw = ImageDraw.Draw(img)
-
-            # Define fonts with larger sizes
-            above_text_font_size = 18  # Change this to the desired font size
-            below_text_font_size = 10  # Change this to the desired font size
-
-            font = ImageFont.truetype("arial.ttf", above_text_font_size)  # You can change the font file and size if needed
-            small_font = ImageFont.truetype("arial.ttf", below_text_font_size)  # You can change the font file and size if needed
-
-            # Replace this section above the QR code
-            above_text = "SCAN TO DISPLAY HOLOGRAM"  # Change this text
-            above_text_size = draw.textsize(above_text, font=font)
-            above_text_position = ((img.width - above_text_size[0]) // 2, 10)
-            draw.text(above_text_position, above_text, font=font, fill="black")
-            above_text_x = (img.width - above_text_size[0]) // 2  # Center the text horizontally
-            above_text_y = 10
-            draw.text((above_text_x, above_text_y), above_text, font=font, fill="black")
-
-            # Replace this section below the QR code
-            below_text = "Having issues? Visit Summitov.com/portal."  # Change this text
-            below_text_size = draw.textsize(below_text, font=small_font)
-            below_text_x = (img.width - below_text_size[0]) // 2  # Center the text horizontally
-            below_text_y = img.height - below_text_size[1] - 10
-            draw.text((below_text_x, below_text_y), below_text, font=small_font, fill="black")
-
-            # Save the QR code image
-            qr_image_path = "qr_code.png"
-            img.save(qr_image_path)
-
-            ret = rit.print_qr(qr_image_path)
-            if ret != 0:
-                raise ValueError("Couldn't print, check file path")
-
-            # Now, you can add the code to create and print the QR code as needed
             record = Record(rit.ring_it_params, rit.mv_session, 25, scan=current_uuid)
             rit.create_qr_image(record)
             print("\n The path to access your barcode is:", os.path.normpath(record.qrimage) + "\n")
 
+            ret = rit.print_qr(record.qrimage)
+            if ret != 0:
+                raise ValueError("Couldn't print, check file path")
         except Exception as e:
             print(e)
 

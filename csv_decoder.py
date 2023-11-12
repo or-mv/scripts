@@ -1,53 +1,65 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 
-def read_and_process_csv():
-    # Ask user for CSV file path
-    csv_path = input("Enter the path to the CSV file: ")
-
-    # Read the CSV file
+def read_and_process_csv(csv_path):
     df = pd.read_csv(csv_path)
+    calibration_status = 100
+    average_scale = 0
 
-    # Get unique values in the StreamId column
-    unique_stream_ids = df['StreamId'].unique()
+    if 'StreamId' in df.columns and 'ScaleInMm' in df.columns and 'C2CErrVariance' in df.columns:
+        unique_stream_ids = df['StreamId'].unique()
+        
+        def plot_scale_figures(stream_id):
+            stream_data = df[(df['StreamId'] == stream_id) & (df['ScaleInMm'] != 0)]
+            
+            calibration_status = 100
+            
+            if any(abs(stream_data['ScaleInMm'] - 322) > 0.3):
+                calibration_status -= 10
 
-    # Process data for each unique StreamId
-    for stream_id in unique_stream_ids:
-        # Filter data for the current StreamId and ignore 0 values in ScaleInMm
-        stream_data = df[(df['StreamId'] == stream_id) & (df['ScaleInMm'] != 0)]
+            average_scale = stream_data['ScaleInMm'].mean()
+            
+            plt.figure(figsize=(15, 8))
+            plt.scatter(range(len(stream_data)), stream_data['ScaleInMm'], c='turquoise', label=f'ScaleInMm')
+            plt.xlabel('Data Point Index')
+            plt.ylabel('ScaleInMm')
+            plt.title(f'Stream {stream_id} ScaleInMm')
 
-        # Check calibration status based on ScaleInMm column
-        calibration_status = 100  # Default to 100%
-        if any(abs(stream_data['ScaleInMm'] - 322) > 0.3):
-            calibration_status -= 10
+            if len(stream_data) > 0:
+                plt.text(0.5, 0.9, f'Average Scale: {average_scale:.2f} mm', ha='center', va='center', fontsize=14, transform=plt.gca().transAxes)
+            
+            plt.show()
 
-        # Calculate the average of the "ScaleInMm" column
-        average_scale = stream_data['ScaleInMm'].mean()
+        def plot_c2c_variance_figures(stream_id):
+            stream_data = df[(df['StreamId'] == stream_id) & (df['ScaleInMm'] != 0)]
+            c2c_err_variance = stream_data['C2CErrVariance']
 
-        # Visual representation (Scatter plot using "ScaleInMm" for X axis)
-        plt.figure(figsize=(15, 8))  # Larger diagram and text area
-        plt.scatter(range(len(stream_data)), stream_data['ScaleInMm'], c='turquoise', label=f'Stream {stream_id}')
+            plt.figure(figsize=(15, 8))
+            for i, val in enumerate(c2c_err_variance):
+                if val > 2:
+                    plt.scatter(i, val, c='red', label='C2CErrVariance')
+                else:
+                    plt.scatter(i, val, c='green', label='C2CErrVariance')
 
-        # Customize the plot as needed
-        plt.xlabel('Data Point Index')
-        plt.ylabel('ScaleInMm')
+            plt.xlabel('Data Point Index')
+            plt.ylabel('C2CErrVariance')
+            plt.title(f'Stream {stream_id} C2CErrVariance')
 
-        # Set X-axis ticks at 0.50 intervals
-        plt.xticks(range(0, len(stream_data), 50), [f'{i * 0.50:.2f}' for i in range(0, len(stream_data), 50)])
+            if len(c2c_err_variance) > 0:
+                average_c2c = sum(c2c_err_variance) / len(c2c_err_variance)
+                plt.text(0.5, 0.9, f'Average C2CErrVariance: {average_c2c:.2f}', ha='center', va='center', fontsize=14, transform=plt.gca().transAxes)
+            
+            plt.show()
 
-        # Set Y-axis ticks at 0.5 mm intervals
-        min_scale = max(0, int(min(stream_data['ScaleInMm'])))
-        max_scale = int(max(stream_data['ScaleInMm'])) + 1
-        plt.yticks([i * 0.5 for i in range(min_scale * 2, max_scale * 2)])
+        if len(unique_stream_ids) > 0:
+            stream_id = unique_stream_ids[0]
+            plot_scale_figures(stream_id)
+            plot_c2c_variance_figures(stream_id)
+        else:
+            print("No valid data found.")
+    else:
+        print("Required columns (StreamId, ScaleInMm, C2CErrVariance) not found in the CSV.")
 
-        # Display calibration status and average scale two lines higher above the plot
-        plt.text(0.1, 1.1, f'Average Scale: {average_scale:.2f} mm', ha='left', va='center', fontsize=14, transform=plt.gca().transAxes)
-        plt.text(0.9, 1.1, f'Calibration status is {calibration_status}%', ha='right', va='center', fontsize=14, transform=plt.gca().transAxes)
-        plt.text(0.5, 1.1, f'Stream {stream_id} Calibration Results', ha='center', va='center', fontsize=14, transform=plt.gca().transAxes)
-
-        # Save or display the visual results for each StreamId
-        plt.savefig(f'calibration_result_stream_{stream_id}.png', bbox_inches='tight')  # Save each plot with a unique filename
-        plt.show()
-
-# Call the function
-read_and_process_csv()
+# Get the CSV file path from the user
+csv_path = input("Please provide the path to the CSV file: ")
+read_and_process_csv(csv_path)

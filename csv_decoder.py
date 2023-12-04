@@ -1,64 +1,36 @@
 import pandas as pd
-import matplotlib.pyplot as plt
+import plotly.graph_objs as go
 
 def read_and_process_csv(csv_path):
     df = pd.read_csv(csv_path)
-    calibration_status = 100
-    average_scale = 0
 
-    if 'StreamId' in df.columns and 'ScaleInMm' in df.columns and 'C2CErrVariance' in df.columns:
-        unique_stream_ids = df['StreamId'].unique()
-        
-        def plot_scale_figures(stream_id):
-            stream_data = df[(df['StreamId'] == stream_id) & (df['ScaleInMm'] != 0)]
-            
-            calibration_status = 100
-            
-            if any(abs(stream_data['ScaleInMm'] - 322) > 0.3):
-                calibration_status -= 10
+    unique_stream_ids = df['StreamId'].unique()
 
-            average_scale = stream_data['ScaleInMm'].mean()
-            
-            plt.figure(figsize=(15, 8))
-            plt.scatter(range(len(stream_data)), stream_data['ScaleInMm'], c='turquoise', label=f'ScaleInMm')
-            plt.xlabel('Data Point Index')
-            plt.ylabel('ScaleInMm')
-            plt.title(f'Stream {stream_id} ScaleInMm')
+    def plot_figures(stream_id):
+        stream_data_scale = df[(df['StreamId'] == stream_id) & (df['ScaleInMm'] != 0)]
 
-            if len(stream_data) > 0:
-                plt.text(0.5, 0.9, f'Average Scale: {average_scale:.2f} mm', ha='center', va='center', fontsize=14, transform=plt.gca().transAxes)
-            
-            plt.show()
+        # Additional columns to include
+        additional_columns = ['ScaleInMm', 'Col1AvgError', 'Col2AvgError', 'C2CAvgError']
 
-        def plot_c2c_variance_figures(stream_id):
-            stream_data = df[(df['StreamId'] == stream_id) & (df['ScaleInMm'] != 0)]
-            c2c_err_variance = stream_data['C2CErrVariance']
+        fig = go.Figure()
 
-            plt.figure(figsize=(15, 8))
-            for i, val in enumerate(c2c_err_variance):
-                if val > 2:
-                    plt.scatter(i, val, c='red', label='C2CErrVariance')
-                else:
-                    plt.scatter(i, val, c='green', label='C2CErrVariance')
+        for col in additional_columns:
+            stream_data_col = df[(df['StreamId'] == stream_id) & (df[col] != 0)]
+            if not stream_data_col.empty:
+                average_col = stream_data_col[col].mean()
+                fig.add_trace(go.Scatter(x=stream_data_col.index, y=stream_data_col[col],
+                                         mode='markers', marker=dict(size=10), name=col))
+                fig.add_annotation(text=f'Average {col}: {average_col:.2f}', x=0.5, y=0.9 - additional_columns.index(col) * 0.1,
+                                   xref='paper', yref='paper', showarrow=False, font=dict(size=14, color='black'))
 
-            plt.xlabel('Data Point Index')
-            plt.ylabel('C2CErrVariance')
-            plt.title(f'Stream {stream_id} C2CErrVariance')
+        fig.update_layout(title=f'Stream {stream_id} - Additional Columns', xaxis_title='Data Point Index', showlegend=True)
+        fig.update_xaxes(showline=True, linewidth=1, linecolor='black')
+        fig.update_yaxes(showline=True, linewidth=1, linecolor='black')
 
-            if len(c2c_err_variance) > 0:
-                average_c2c = sum(c2c_err_variance) / len(c2c_err_variance)
-                plt.text(0.5, 0.9, f'Average C2CErrVariance: {average_c2c:.2f}', ha='center', va='center', fontsize=14, transform=plt.gca().transAxes)
-            
-            plt.show()
+        fig.show()
 
-        if len(unique_stream_ids) > 0:
-            stream_id = unique_stream_ids[0]
-            plot_scale_figures(stream_id)
-            plot_c2c_variance_figures(stream_id)
-        else:
-            print("No valid data found.")
-    else:
-        print("Required columns (StreamId, ScaleInMm, C2CErrVariance) not found in the CSV.")
+    for stream_id in unique_stream_ids:
+        plot_figures(stream_id)
 
 # Get the CSV file path from the user
 csv_path = input("Please provide the path to the CSV file: ")

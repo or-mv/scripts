@@ -121,9 +121,19 @@ for stream_id in unique_stream_ids:
                                 xref='paper', yref='paper', showarrow=False, font=dict(size=14),
                                 bgcolor='rgba(255, 255, 255, 0.5)')
 
+        # Calculate rates for medianEpiDist and spreadEpiDist
+        rate_median = int((average_median - 0.18) / 0.01)
+        rate_spread = int((average_spread - 0.30) / 0.01)
+        overall_rate = 100 - (rate_median + rate_spread)
+
+
+        # Annotate the rate at the top of the plot
+        fig_epi.add_annotation(text=f'<b style="color: green;"> Rate: {overall_rate}</b>',
+                                x=0.5, y=1, xref='paper', yref='paper', showarrow=False, font=dict(size=16))
+
         fig_epi.update_layout(title=f'Stream {stream_id} - Epi Values',
                             xaxis_title='Frame',
-                            yaxis_title='Millimeters',
+                            yaxis_title='Pixels',
                             showlegend=True)
 
         fig_epi.show()

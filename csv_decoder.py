@@ -111,15 +111,15 @@ for stream_id in unique_stream_ids:
 
         # Annotate average value for medianEpiDist
         average_median = df['medianEpiDist'].mean()
-        fig_epi.add_annotation(text=f'Average MedianEpiDist: {average_median:.2f}', x=0.5, y=0.9,
-                                xref='paper', yref='paper', showarrow=False, font=dict(size=14),
-                                bgcolor='rgba(255, 255, 255, 0.5)')
+        fig_epi.add_annotation(text=f'Average Median Epipolar Distance: {average_median:.2f}', x=0.5, y=0.9,
+                                xref='paper', yref='paper', showarrow=False, font=dict(size=20, color='dark blue', family='Arial'))
+                                
 
         # Annotate average value for spreadEpiDist
         average_spread = df['spreadEpiDist'].mean()
-        fig_epi.add_annotation(text=f'Average SpreadEpiDist: {average_spread:.2f}', x=0.5, y=0.8,
-                                xref='paper', yref='paper', showarrow=False, font=dict(size=14),
-                                bgcolor='rgba(255, 255, 255, 0.5)')
+        fig_epi.add_annotation(text=f'Average Spread Epipolar Distance: {average_spread:.2f}', x=0.5, y=0.8,
+                                xref='paper', yref='paper', showarrow=False, font=dict(size=20, color='dark blue', family='Arial'))
+                            
 
         # Calculate rates for medianEpiDist and spreadEpiDist
         rate_median = int((average_median - 0.18) / 0.01)
@@ -129,7 +129,7 @@ for stream_id in unique_stream_ids:
 
         # Annotate the rate at the top of the plot
         fig_epi.add_annotation(text=f'<b style="color: green;"> Rate: {overall_rate}</b>',
-                                x=0.5, y=1, xref='paper', yref='paper', showarrow=False, font=dict(size=16))
+                                x=0.5, y=1, xref='paper', yref='paper', showarrow=False, font=dict(size=26))
 
         fig_epi.update_layout(title=f'Stream {stream_id} - Epi Values',
                             xaxis_title='Frame',

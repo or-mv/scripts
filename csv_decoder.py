@@ -85,16 +85,18 @@ for stream_id in unique_stream_ids:
     fig_scale = plot_scale_figure(df, stream_id)
     fig_errors = plot_error_figures(df, stream_id)
 
-    fig_scale.show()
-    fig_errors.show()
 
-    # # Check if the required columns exist in the DataFrame
-    # if 'FrameID' not in df.columns:
-    #     print("Error: 'FrameID' column is missing in the DataFrame.")
-    # if 'MedianEpiDist' not in df.columns:
-    #     print("Error: 'MedianEpiDist' column is missing in the DataFrame.")
-    # if 'spreadEpiDist' not in df.columns:
-    #     print("Error: 'spreadEpiDist' column is missing in the DataFrame.")
+    # Iterate over unique_stream_ids after defining it
+for stream_id in unique_stream_ids:
+    fig_scale = plot_scale_figure(df, stream_id)
+    fig_errors = plot_error_figures(df, stream_id)
+
+    # Check if both error values and scale value are all zeros
+    if all(df[(df['StreamId'] == stream_id)][['Col1AvgError', 'Col2AvgError', 'C2CAvgError', 'ScaleInMm']].eq(0).all()):
+        print(f"Stream {stream_id} has missing or zero error values and scale value. Plots not created.")
+    else:
+        fig_scale.show()
+        fig_errors.show()
 
     # Create a new figure for FrameID, medianEpiDist, spreadEpiDist
     fig_epi = go.Figure()

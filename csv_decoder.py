@@ -26,7 +26,10 @@ def read_and_process_csv(csv_path):
             fig_scale.add_annotation(text=f'Average ScaleInMm: {average_scale:.2f}', x=0.5, y=0.9,
                                      xref='paper', yref='paper', showarrow=False, font=dict(size=14))
 
-        fig_scale.update_layout(title=f'Stream {stream_id} - ScaleInMm', showlegend=True)
+        fig_scale.update_layout(title=f'Stream {stream_id} - ScaleInMm',
+                                xaxis_title='Frames',
+                                yaxis_title='Millimeters',
+                                showlegend=True)
 
         return fig_scale
 
@@ -56,7 +59,10 @@ def read_and_process_csv(csv_path):
         fig_errors.add_annotation(text=f'<b style="color: green;"> Calibration Rate: {calibration_rate:.2f}</b>',
                                   x=0.5, y=1, xref='paper', yref='paper', showarrow=False, font=dict(size=16))
 
-        fig_errors.update_layout(title=f'Stream {stream_id} - Error Values', showlegend=True)
+        fig_errors.update_layout(title=f'Stream {stream_id} - Error Values',
+                                 xaxis_title='Frames',
+                                 yaxis_title='Pixels',
+                                 showlegend=True)
 
         return fig_errors
 

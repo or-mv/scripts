@@ -1,9 +1,5 @@
-import matplotlib
-matplotlib.use('TkAgg')
-
 import matplotlib.pyplot as plt
 import re
-import numpy as np
 import mplcursors
 
 # Define the parameter ranges
@@ -41,7 +37,6 @@ ranges = {
 # Get the log file path from the user
 log_file = input("Enter the path to your log file: ")
 
-
 # Read the log file and parse the data using regular expressions
 data = {}
 with open(log_file, 'r') as file:
@@ -54,10 +49,6 @@ with open(log_file, 'r') as file:
             data[key] = value
 
 # Plotting and evaluation
-failures = 0
-successes = 0
-
-
 fig, ax = plt.subplots(figsize=(10, 12))
 bar_colors = ['green' if ranges[param][0] <= value <= ranges[param][1] else 'red' for param, value in data.items()]
 bar_heights = list(range(len(data)))
@@ -70,30 +61,25 @@ def on_bar_click(sel):
     bar = sel.artist[index]
     x = bar.get_x() + bar.get_width() / 2  # Extract x-coordinate of the bar
     param = list(data.keys())[index]
-    plt.gca().set_title(f'Selected Bar: {param}, Value: {x:.2f}', color='white')
-
+    plt.gca().text(0.5, -0.1, f'Selected Bar: {param}, Value: {x:.2f}', ha='center', va='top', transform=ax.transAxes, color='white')
 
 # Attach the cursor to the bars
-mplcursors.cursor(hover=True).connect("add", on_bar_click)
+cursor = mplcursors.cursor(hover=True)
+cursor.connect("add", on_bar_click)
 
+# Count successes and failures
+failures = sum(1 for color in bar_colors if color == 'red')
+successes = len(bar_colors) - failures
 
-
-
-for color in bar_colors:
-    if color == 'red':
-        failures += 1
-    else:
-        successes += 1
-
+# Set up the plot details
 ax.set_yticks(bar_heights)
 ax.set_yticklabels(data.keys())
 ax.set_xlabel('Values')
+
+# Set the main title
 title = f'Successes: {successes} (Within Range), Failures: {failures} (Out of Range)'
-ax.set_title(title, pad=30)  # Adjusting the padding to place the title properly
+ax.set_title(title, pad=30, color='black')  # Adjust title color here
 
-# Displaying counts on the plot within the title
-plt.text(0.5, 0.98, title, ha='center', va='top', transform=ax.transAxes, color='white')
-
+# Display the plot
 plt.tight_layout(rect=[0, 0.03, 1, 0.95])
-
 plt.show()

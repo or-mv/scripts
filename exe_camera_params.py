@@ -39,6 +39,8 @@ def run_exe(work_directory, rig_path, color_path, exe_path):
 def process_folders(base_directory, exe_path):
     log_paths = []
     only_rig_paths = []
+    unique_log_paths = []  # Initialize the list
+    unique_only_rig_paths = []  # Initialize the list
 
     for root, dirs, files in os.walk(base_directory):
         colorrig_files = [file for file in files if file.lower().endswith('colorrig.txt')]

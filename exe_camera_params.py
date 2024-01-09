@@ -125,7 +125,7 @@ if __name__ == "__main__":
     base_directory = input("Enter the base directory path: ")
 
     # Define the executable path
-    exe_path = os.path.join(r"C:\Users\user\Desktop\DeviceParamsApp", "DeviceParameters.exe")
+    exe_path = os.path.join(r"C:\temp\DeviceParamsApp", "DeviceParameters.exe")
 
     # Process folders and find rig-colorrig pairs
     process_folders(base_directory, exe_path)

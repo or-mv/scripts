@@ -54,9 +54,10 @@ def process_folders(base_directory, exe_path):
 
             run_exe(root, rig_path, colorrig_path, exe_path)
 
-            # Add the log path to the list
+            # Add the log path to the list with source information
             log_path = os.path.join(root, "DeviceParameters.log")
-            log_paths.append(log_path)
+            source_info = "colorrig and rig" if colorrig_file in files and rig_file in files else "colorrig" if colorrig_file in files else "rig"
+            log_paths.append((log_path, source_info))
 
         # Check if no colorrig suffix is found and work only with rig file
         if not colorrig_files:
@@ -66,23 +67,55 @@ def process_folders(base_directory, exe_path):
                 print(f"{Fore.YELLOW}Working with only rig file: {rig_path}{Style.RESET_ALL}")
                 run_exe(root, rig_path, "", exe_path)
 
-                # Add the log path to the list
+                # Add the log path to the list with source information
                 log_path = os.path.join(root, "DeviceParameters.log")
-                only_rig_paths.append(log_path)
+                source_info = "rig"
+                only_rig_paths.append((log_path, source_info))
 
-    # Print all DeviceParameters.log paths from rig and colorrig pairs
+    # Print DeviceParameters.log paths from both rig and colorrig
     if log_paths:
         print(f"\n{Fore.CYAN}New files of Device parameters from rig and colorrig are here:{Style.RESET_ALL}")
         unique_log_paths = list(set(log_paths))  # Remove duplicates
-        for log_path in unique_log_paths:
-            print(f"{Fore.GREEN}{log_path}{Style.RESET_ALL}")
+        for log_path, source_info in unique_log_paths:
+            print(f"{Fore.GREEN}{log_path} (Source: {source_info}){Style.RESET_ALL}")
 
-    # Print only rig paths if they are present
+    # Print DeviceParameters.log paths only from rig
     if only_rig_paths:
-        print(f"\n{Fore.YELLOW}Working with only rig file:{Style.RESET_ALL}")
-        unique_rig_paths = list(set(only_rig_paths))  # Remove duplicates
-        for rig_path in unique_rig_paths:
-            print(f"{Fore.GREEN}{rig_path}{Style.RESET_ALL}")
+        print(f"\n{Fore.YELLOW}New files of Device parameters ONLY from rig are here:{Style.RESET_ALL}")
+        unique_only_rig_paths = list(set(only_rig_paths))  # Remove duplicates
+        for log_path, source_info in unique_only_rig_paths:
+            print(f"{Fore.GREEN}{log_path} (Source: {source_info}){Style.RESET_ALL}")
+
+    # Run script 2 on each log path
+    all_log_paths = unique_log_paths + unique_only_rig_paths
+
+    # List to store the Popen objects for each subprocess
+    processes = []
+
+    # Ask the user if they want to see the plots
+    user_input = input("Do you want to see the plots of the log files? (Y for yes, N for no): ").lower()
+
+    if user_input == 'y':
+        for log_path, _ in all_log_paths:
+            try:
+                second_script_path = r"C:\Users\user\Desktop\vscode_tests_or\scripts\device_parameters_decoder.py"
+                # Start a new process for each log file
+                process = subprocess.Popen(["python", second_script_path, log_path])
+                processes.append(process)
+
+                print(f"Started opening log file: {log_path}")
+            except Exception as e:
+                print(f"Error opening log file {log_path}: {e}")
+
+        # Wait for all processes to finish
+        for process in processes:
+            process.wait()
+
+        print("All log files opened.")
+    else:
+        print("You chose not to see the plots.")
+
+
 
 
 if __name__ == "__main__":
